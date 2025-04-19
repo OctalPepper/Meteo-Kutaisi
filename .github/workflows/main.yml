@@ -1,8 +1,4 @@
-name: Meteo UGKO
-
-on:
-  schedule:
-    - cron: '0 */3 * * *'  # toutes les 3h
+* * *'  # toutes les 3h
   workflow_dispatch:
 
 jobs:
