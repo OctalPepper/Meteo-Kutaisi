@@ -1,18 +1,22 @@
 import requests
 from bs4 import BeautifulSoup
 
-# Ton URL webhook Discord
-WEBHOOK_URL = "https://discord.com/api/webhooks/1362851767494250797/NZA_R2SPfK9ijEukU07cAZGDLM-Q26IBpdu2Hpei4SMVAElc8x-MC4zdK-STeQ1fuyUZ"
+WEBHOOK_URL = "https://discord.com/api/webhooks/..."
 
 def get_meteo_ugko():
     url = "https://www.bigorre.org/aero/meteo/ugko/fr"
-    response = requests.get(url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+    }
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     def find_value(label):
         row = soup.find("td", string=label)
         if row:
-            return row.find_next_sibling("td").text.strip()
+            next_td = row.find_next_sibling("td")
+            if next_td:
+                return next_td.text.strip()
         return "Non disponible"
 
     vent = find_value("Vent")
