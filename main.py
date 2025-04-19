@@ -1,47 +1,39 @@
 import requests
 from bs4 import BeautifulSoup
+from metar import Metar
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/..."
+# URL de la page METAR
+url = "https://www.bigorre.org/aero/meteo/ugko/fr"
 
-def get_meteo_ugko():
-    url = "https://www.bigorre.org/aero/meteo/ugko/fr"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-    }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'html.parser')
+# En-têtes pour la requête HTTP
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+}
 
-    def find_value(label):
-        row = soup.find("td", string=label)
-        if row:
-            next_td = row.find_next_sibling("td")
-            if next_td:
-                return next_td.text.strip()
-        return "Non disponible"
+# Récupération de la page
+response = requests.get(url, headers=headers)
+soup = BeautifulSoup(response.text, 'html.parser')
 
-    vent = find_value("Vent")
-    couverture = find_value("Couverture nuageuse")
-    qnh = find_value("QNH")
-    qfe = find_value("QFE")
-    piste = find_value("Piste en service")
+# Extraction du code METAR
+metar_text = soup.find('code').get_text()
 
-    message = f"""**Bilan météo UGKO**
+# Parsing du code METAR
+report = Metar.Metar(metar_text)
 
-**Vent :** {vent}
-**Couverture nuageuse :** {couverture}
-**QNH :** {qnh}
-**QFE :** {qfe}
-**Piste en service :** {piste}
+# Extraction des informations
+vent_direction = report.wind_dir.value()
+vent_vitesse = report.wind_speed.value()
+qnh = report.press.value()
+# Note : Le QFE n'est généralement pas inclus dans le METAR
+
+# Formatage du message
+message = f"""**Bilan météo UGKO**
+
+**Vent :** {vent_direction}° à {vent_vitesse} kt
+**QNH :** {qnh} hPa
 """
 
-    return message
-
-def send_to_discord(message):
-    data = {
-        "content": message
-    }
-    requests.post(WEBHOOK_URL, json=data)
-
-if __name__ == "__main__":
-    meteo = get_meteo_ugko()
-    send_to_discord(meteo)
+# Envoi du message à Discord
+WEBHOOK_URL = "https://discord.com/api/webhooks/..."
+data = {"content": message}
+requests.post(WEBHOOK_URL, json=data)
