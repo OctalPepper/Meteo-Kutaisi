@@ -1,24 +1,26 @@
-name: Météo UGKO
+name: Meteo UGKO
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:  # 👈 Ajoute cette ligne !
+    - cron: '0 */3 * * *'  # toutes les 3h
+  workflow_dispatch:
 
 jobs:
-  run:
+  meteo:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Installer Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
-        run: pip install requests beautifulsoup4
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 python-metar
 
-      - name: Run script
-        run: python main.py
+      - name: Exécuter le script météo
+        run: python meteo.py
